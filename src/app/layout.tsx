@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-page-custom-font */
-import type { Metadata } from "next"
 import "./globals.css"
+
+import type { Metadata } from "next"
+import WrapperReactQuery from "~/lib/WrapperReactQuery"
 
 export const metadata: Metadata = {
   title: "Task App",
@@ -22,7 +24,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`antialiased`}>{children}</body>
+      <body className={`antialiased`}>
+        <WrapperReactQuery>{children}</WrapperReactQuery>
+      </body>
     </html>
   )
 }

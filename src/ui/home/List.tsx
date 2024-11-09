@@ -5,26 +5,24 @@ import clsx from "clsx"
 import IconLoader from "~/components/icon/loader"
 import IconTrash from "~/components/icon/trash"
 import { Checkbox } from "~/components/ui/checkbox"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip"
+import MyDialog from "~/components/ui/partials/MyDialog"
+import MyTooltip from "~/components/ui/partials/MyTooltip"
+import { FormEdit } from "./partials/Form"
+import useTask from "~/data/query/useTask"
+import { useMutation } from "@tanstack/react-query"
+import TaskRepository from "~/data/repository/task"
+import { queryClient } from "~/lib/WrapperReactQuery"
 
 export function List() {
-  const data = [
-    {
-      id: "1",
-      name: "Read a book",
-      is_finished: true,
-    },
-    {
-      id: "2",
-      name: "Learn Flutter for 1 hour",
-      is_finished: false,
-    },
-    {
-      id: "3",
-      name: "Learn React for 1 hour",
-      is_finished: false,
-    },
-  ]
+  const { data, isLoading, isFetching } = useTask()
+
+  if (isLoading || isFetching) {
+    return (
+      <div className="flex justify-center items-center">
+        <IconLoader />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-[24px] p-[16px]">
@@ -52,6 +50,21 @@ type ListItemProps = {
 export function ListItem(props: ListItemProps) {
   const { id, name, is_finished } = props
 
+  const deleteTask = useMutation({
+    mutationFn: async (id: string) => TaskRepository.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task"] })
+    },
+  })
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteTask.mutateAsync(id)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className="flex flex-row justify-between bg-white rounded-[120px] py-[12px] px-[24px]">
       <div className="flex gap-[12px] items-center">
@@ -62,45 +75,26 @@ export function ListItem(props: ListItemProps) {
           defaultChecked={is_finished}
         />
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger onClick={() => console.log("edit", { id })}>
-              <label
-                className={clsx(
-                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
-                  is_finished && "line-through"
-                )}
-              >
-                {name}
-              </label>
-            </TooltipTrigger>
-            <TooltipContent>Edit task</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <MyTooltip label="Edit task" onClick={() => console.log("edit", { id })}>
+          <label
+            className={clsx(
+              "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
+              is_finished && "line-through"
+            )}
+          >
+            {name}
+          </label>
+        </MyTooltip>
       </div>
 
       <div className="flex gap-[8px]">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger onClick={() => console.log("edit", { id })}>
-              <IconEdit stroke={1.5} />
-            </TooltipTrigger>
-            <TooltipContent>
-              <span>Edit</span>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <MyDialog title="Edit task" trigger={<IconEdit stroke={1.5} />}>
+          <FormEdit id={id} />
+        </MyDialog>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger onClick={() => console.log("deleted", { id })}>
-              <IconTrash />
-            </TooltipTrigger>
-            <TooltipContent>
-              <span>Delete</span>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <MyTooltip label="Delete task" onClick={() => handleDelete(id)}>
+          <IconTrash />
+        </MyTooltip>
       </div>
     </div>
   )
