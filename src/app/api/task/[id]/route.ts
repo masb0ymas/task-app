@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "~/lib/prisma"
+import { validate } from "~/lib/validate"
 
 type ContextParams = {
   params: { id: string }
@@ -51,7 +52,7 @@ export async function PUT(req: NextRequest, context: ContextParams) {
     where: { id: String(params.id) },
     data: {
       name: name,
-      is_finished: Boolean(is_finished),
+      is_finished: validate.boolean(is_finished),
     },
   })
 
