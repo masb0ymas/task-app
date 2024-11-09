@@ -12,9 +12,31 @@ import useTask from "~/data/query/useTask"
 import TaskRepository from "~/data/repository/task"
 import { queryClient } from "~/lib/WrapperReactQuery"
 import { FormEdit } from "./partials/Form"
+import { useState } from "react"
 
 export function List() {
-  const { data, isLoading, isFetching } = useTask()
+  const [page] = useState(1)
+  const [pageSize] = useState(10)
+  const [visible, setVisible] = useState(false)
+
+  const { data, total, isLoading, isFetching, helpers } = useTask({
+    query: {
+      defaultValue: {
+        page,
+        pageSize,
+      },
+    },
+  })
+
+  function handleLoadMore() {
+    setVisible(true)
+
+    helpers.setQuery((helper) => {
+      helper.query.set("pageSize", pageSize + 10)
+    })
+
+    setVisible(false)
+  }
 
   if (isLoading || isFetching) {
     return (
@@ -34,9 +56,21 @@ export function List() {
         </div>
       </div>
 
-      <div className="flex justify-center items-center">
-        <IconLoader />
-      </div>
+      {total > 10 && (
+        <div className="flex justify-center items-center">
+          {visible ? (
+            <IconLoader />
+          ) : (
+            <button
+              disabled={visible}
+              onClick={handleLoadMore}
+              className="rounded-[120px] w-40 px-[32px] h-[52px] text-base font-semibold text-primary-foreground bg-[#601feb]"
+            >
+              Load more
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
