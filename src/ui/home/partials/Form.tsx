@@ -44,10 +44,10 @@ function AbstractForm(props: AbstractFormProps) {
   })
 
   function childBtn() {
-    if (isEdit) {
-      return "Update"
-    } else if (formik.isSubmitting) {
+    if (formik.isSubmitting) {
       return <IconLoader />
+    } else if (isEdit) {
+      return "Update"
     } else {
       return "Add"
     }
@@ -56,7 +56,11 @@ function AbstractForm(props: AbstractFormProps) {
   return (
     <form onSubmit={formik.handleSubmit}>
       <div
-        className={clsx("flex", isEdit ? "flex-col" : "flex-row", "gap-[12px] px-[12px] py-[16px]")}
+        className={clsx(
+          "flex",
+          isEdit ? "flex-col gap-[24px]" : "flex-row gap-[12px]",
+          !isEdit && "px-[12px] py-[16px]"
+        )}
       >
         <div className="w-full">
           <input

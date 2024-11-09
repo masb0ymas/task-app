@@ -75,16 +75,21 @@ export function ListItem(props: ListItemProps) {
           defaultChecked={is_finished}
         />
 
-        <MyTooltip label="Edit task" onClick={() => console.log("edit", { id })}>
-          <label
-            className={clsx(
-              "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
-              is_finished && "line-through"
-            )}
-          >
-            {name}
-          </label>
-        </MyTooltip>
+        <MyDialog
+          title="Edit task"
+          trigger={
+            <label
+              className={clsx(
+                "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
+                is_finished && "line-through"
+              )}
+            >
+              {name}
+            </label>
+          }
+        >
+          <FormEdit id={id} />
+        </MyDialog>
       </div>
 
       <div className="flex gap-[8px]">
