@@ -114,7 +114,12 @@ export function FormEdit(props: { id: string }) {
   })
 
   if (isLoading || isFetching) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex flex-col justify-center items-center mt-4">
+        <IconLoader />
+        <span>Loading...</span>
+      </div>
+    )
   }
 
   return <AbstractForm initialValues={{ name: data?.name }} mutation={updateTask} isEdit />

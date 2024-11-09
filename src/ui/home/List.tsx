@@ -1,17 +1,17 @@
 "use client"
 
 import { IconEdit } from "@tabler/icons-react"
+import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import IconLoader from "~/components/icon/loader"
 import IconTrash from "~/components/icon/trash"
 import { Checkbox } from "~/components/ui/checkbox"
 import MyDialog from "~/components/ui/partials/MyDialog"
 import MyTooltip from "~/components/ui/partials/MyTooltip"
-import { FormEdit } from "./partials/Form"
 import useTask from "~/data/query/useTask"
-import { useMutation } from "@tanstack/react-query"
 import TaskRepository from "~/data/repository/task"
 import { queryClient } from "~/lib/WrapperReactQuery"
+import { FormEdit } from "./partials/Form"
 
 export function List() {
   const { data, isLoading, isFetching } = useTask()
@@ -50,6 +50,13 @@ type ListItemProps = {
 export function ListItem(props: ListItemProps) {
   const { id, name, is_finished } = props
 
+  const updateTask = useMutation({
+    mutationFn: async (formData: any) => TaskRepository.update(id, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task"] })
+    },
+  })
+
   const deleteTask = useMutation({
     mutationFn: async (id: string) => TaskRepository.delete(id),
     onSuccess: () => {
@@ -65,6 +72,14 @@ export function ListItem(props: ListItemProps) {
     }
   }
 
+  async function handleCheckbox(checked: string | boolean) {
+    try {
+      await updateTask.mutateAsync({ name, is_finished: checked })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className="flex flex-row justify-between bg-white rounded-[120px] py-[12px] px-[24px]">
       <div className="flex gap-[12px] items-center">
@@ -73,6 +88,7 @@ export function ListItem(props: ListItemProps) {
           name="is_finished"
           className="data-[state=checked]:bg-[#601feb]"
           defaultChecked={is_finished}
+          onCheckedChange={(checked) => handleCheckbox(checked)}
         />
 
         <MyDialog
