@@ -4,7 +4,7 @@ import Title from "~/ui/home/Title"
 
 export default function Home() {
   return (
-    <main>
+    <main className="my-40">
       <div className="flex flex-col gap-[40px] h-screen w-screen items-center justify-center">
         <Title />
 
