@@ -4,15 +4,13 @@ import Title from "~/ui/home/Title"
 
 export default function Home() {
   return (
-    <main className="my-40">
-      <div className="flex flex-col gap-[40px] h-screen w-screen items-center justify-center">
-        <Title />
+    <main className="flex flex-col gap-[40px] w-screen my-40 items-center justify-center">
+      <Title />
 
-        <div className="w-[837px] bg-[#fafafa] p-[8px] rounded-[24px]">
-          <FormAdd />
+      <div className="w-[837px] bg-[#fafafa] p-[8px] rounded-[24px]">
+        <FormAdd />
 
-          <List />
-        </div>
+        <List />
       </div>
     </main>
   )

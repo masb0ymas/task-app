@@ -3,11 +3,13 @@
 import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import { useFormik } from "formik"
+import _ from "lodash"
 import IconLoader from "~/components/icon/loader"
 import { TaskEntity } from "~/data/entity/task"
 import useTaskById from "~/data/query/useTaskById"
 import TaskRepository from "~/data/repository/task"
 import { taskSchema } from "~/data/schema/task"
+import { toast } from "~/hooks/use-toast"
 import { queryClient } from "~/lib/WrapperReactQuery"
 
 type AbstractFormProps = {
@@ -34,8 +36,18 @@ function AbstractForm(props: AbstractFormProps) {
 
       try {
         await mutation.mutateAsync(values)
-      } catch (error) {
-        console.log(error)
+      } catch (error: any) {
+        const title = "Catch Error, Please Try Again!"
+        let message = "Something went wrong!"
+
+        if (error.response.status === 404) {
+          message = _.get(error, "response.data.message", "Task not found")
+        }
+
+        toast({
+          title,
+          description: message,
+        })
       }
 
       formik.setSubmitting(false)

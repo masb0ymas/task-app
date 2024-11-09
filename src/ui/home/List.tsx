@@ -1,44 +1,22 @@
 "use client"
 
-import { IconEdit } from "@tabler/icons-react"
-import { useMutation } from "@tanstack/react-query"
-import clsx from "clsx"
+import React, { useEffect } from "react"
+import { useInView } from "react-intersection-observer"
 import IconLoader from "~/components/icon/loader"
-import IconTrash from "~/components/icon/trash"
-import { Checkbox } from "~/components/ui/checkbox"
-import MyDialog from "~/components/ui/partials/MyDialog"
-import MyTooltip from "~/components/ui/partials/MyTooltip"
-import useTask from "~/data/query/useTask"
-import TaskRepository from "~/data/repository/task"
-import { queryClient } from "~/lib/WrapperReactQuery"
-import { FormEdit } from "./partials/Form"
-import { useState } from "react"
+import useInfiniteTask from "~/data/query/useInfiniteTask"
+import ListItem from "./ListItem"
 
 export function List() {
-  const [page] = useState(1)
-  const [pageSize] = useState(10)
-  const [visible, setVisible] = useState(false)
+  const { ref, inView } = useInView()
+  const { data, error, status, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteTask()
 
-  const { data, total, isLoading, isFetching, helpers } = useTask({
-    query: {
-      defaultValue: {
-        page,
-        pageSize,
-      },
-    },
-  })
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, inView])
 
-  function handleLoadMore() {
-    setVisible(true)
-
-    helpers.setQuery((helper) => {
-      helper.query.set("pageSize", pageSize + 10)
-    })
-
-    setVisible(false)
-  }
-
-  if (isLoading || isFetching) {
+  if (status === "pending") {
     return (
       <div className="flex justify-center items-center">
         <IconLoader />
@@ -46,110 +24,43 @@ export function List() {
     )
   }
 
+  if (status === "error") {
+    return (
+      <div className="flex justify-center items-center">
+        <span>Error: {error.message}</span>
+      </div>
+    )
+  }
+
+  console.log(data)
+
   return (
     <div className="flex flex-col gap-[24px] p-[16px]">
       <div className="w-full items-center">
         <div className="flex flex-col gap-[12px]">
-          {data.map((item) => (
-            <ListItem {...item} key={item.id} />
+          {data.pages?.map((page) => (
+            <React.Fragment key={page.pageId}>
+              {page.data.map((item) => (
+                <ListItem {...item} key={item.id} />
+              ))}
+            </React.Fragment>
           ))}
         </div>
       </div>
 
-      {total > 10 && (
-        <div className="flex justify-center items-center">
-          {visible ? (
-            <IconLoader />
-          ) : (
-            <button
-              disabled={visible}
-              onClick={handleLoadMore}
-              className="rounded-[120px] w-40 px-[32px] h-[52px] text-base font-semibold text-primary-foreground bg-[#601feb]"
-            >
-              Load more
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-type ListItemProps = {
-  id: string
-  name: string
-  is_finished: boolean
-}
-
-export function ListItem(props: ListItemProps) {
-  const { id, name, is_finished } = props
-
-  const updateTask = useMutation({
-    mutationFn: async (formData: any) => TaskRepository.update(id, formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] })
-    },
-  })
-
-  const deleteTask = useMutation({
-    mutationFn: async (id: string) => TaskRepository.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] })
-    },
-  })
-
-  async function handleDelete(id: string) {
-    try {
-      await deleteTask.mutateAsync(id)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  async function handleCheckbox(checked: string | boolean) {
-    try {
-      await updateTask.mutateAsync({ name, is_finished: checked })
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-    <div className="flex flex-row justify-between bg-white rounded-[120px] py-[12px] px-[24px]">
-      <div className="flex gap-[12px] items-center">
-        <Checkbox
-          id={`is_finished-${id}`}
-          name="is_finished"
-          className="data-[state=checked]:bg-[#601feb]"
-          defaultChecked={is_finished}
-          onCheckedChange={(checked) => handleCheckbox(checked)}
-        />
-
-        <MyDialog
-          title="Edit task"
-          trigger={
-            <label
-              className={clsx(
-                "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
-                is_finished && "line-through"
-              )}
-            >
-              {name}
-            </label>
-          }
+      <div className="flex justify-center items-center">
+        <button
+          ref={ref}
+          className="rounded-[120px] w-40 px-[32px] h-[52px] text-base font-semibold text-primary-foreground bg-[#601feb]"
         >
-          <FormEdit id={id} />
-        </MyDialog>
-      </div>
-
-      <div className="flex gap-[8px]">
-        <MyDialog title="Edit task" trigger={<IconEdit stroke={1.5} />}>
-          <FormEdit id={id} />
-        </MyDialog>
-
-        <MyTooltip label="Delete task" onClick={() => handleDelete(id)}>
-          <IconTrash />
-        </MyTooltip>
+          {isFetchingNextPage ? (
+            <IconLoader />
+          ) : hasNextPage ? (
+            "Load Newer"
+          ) : (
+            "Nothing more to load"
+          )}
+        </button>
       </div>
     </div>
   )

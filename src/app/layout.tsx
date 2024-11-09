@@ -2,6 +2,7 @@
 import "./globals.css"
 
 import type { Metadata } from "next"
+import { Toaster } from "~/components/ui/toaster"
 import WrapperReactQuery from "~/lib/WrapperReactQuery"
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
       </head>
       <body className={`antialiased`}>
         <WrapperReactQuery>{children}</WrapperReactQuery>
+        <Toaster />
       </body>
     </html>
   )
