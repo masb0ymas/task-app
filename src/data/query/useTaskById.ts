@@ -19,7 +19,6 @@ export default function useTaskById(id: string, options?: UseQueryOptions<TQuery
     },
     enabled: Boolean(id),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     select: (res: any) => res?.data,
     ...options,
   })

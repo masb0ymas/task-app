@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { TaskEntity } from "../entity/task"
+import { useState } from "react"
 
 interface UseResult {
   data: TaskEntity[]
@@ -13,12 +14,10 @@ interface UseResult {
 type TQueryFnData = UseResult
 
 export default function useInfiniteTask() {
-  const endpoint = `/api/task`
-
   const query = useInfiniteQuery<TQueryFnData>({
-    queryKey: ["task", endpoint],
+    queryKey: ["task"],
     queryFn: async ({ pageParam }) => {
-      const result = await axios.get(`${endpoint}?page=${pageParam}&pageSize=10`)
+      const result = await axios.get(`/api/task?page=${pageParam}&pageSize=10`)
       return { ...result.data, pageId: pageParam }
     },
     initialPageParam: 1,
