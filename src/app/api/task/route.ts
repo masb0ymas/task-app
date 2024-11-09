@@ -31,9 +31,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const formData = await req.json()
   const name = _.get(formData, "name", "")
+  const is_finished = _.get(formData, "is_finished", false)
 
   const result = await prisma.task.create({
-    data: { name: name },
+    data: { name: name, is_finished: Boolean(is_finished) },
   })
 
   return NextResponse.json({ message: "data has been added", result }, { status: 201 })

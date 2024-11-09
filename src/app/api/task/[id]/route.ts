@@ -8,9 +8,9 @@ type ContextParams = {
 
 /**
  * GET Task
- * @param _req 
- * @param context 
- * @returns 
+ * @param _req
+ * @param context
+ * @returns
  */
 export async function GET(_req: NextRequest, context: ContextParams) {
   const { params } = context
@@ -37,6 +37,7 @@ export async function PUT(req: NextRequest, context: ContextParams) {
 
   const formData = await req.json()
   const name = _.get(formData, "name", "")
+  const is_finished = _.get(formData, "is_finished", false)
 
   const getTask = await prisma.task.findFirst({
     where: { id: String(params.id) },
@@ -50,6 +51,7 @@ export async function PUT(req: NextRequest, context: ContextParams) {
     where: { id: String(params.id) },
     data: {
       name: name,
+      is_finished: Boolean(is_finished),
     },
   })
 
