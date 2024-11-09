@@ -1,7 +1,7 @@
 "use client"
 
+import { IconEdit } from "@tabler/icons-react"
 import clsx from "clsx"
-import React from "react"
 import IconLoader from "~/components/icon/loader"
 import IconTrash from "~/components/icon/trash"
 import { Checkbox } from "~/components/ui/checkbox"
@@ -67,7 +67,7 @@ export function ListItem(props: ListItemProps) {
             <TooltipTrigger onClick={() => console.log("edit", { id })}>
               <label
                 className={clsx(
-                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
                   is_finished && "line-through"
                 )}
               >
@@ -79,16 +79,29 @@ export function ListItem(props: ListItemProps) {
         </TooltipProvider>
       </div>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger onClick={() => console.log("deleted", { id })}>
-            <IconTrash />
-          </TooltipTrigger>
-          <TooltipContent>
-            <span>Delete</span>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="flex gap-[8px]">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger onClick={() => console.log("edit", { id })}>
+              <IconEdit stroke={1.5} />
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>Edit</span>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger onClick={() => console.log("deleted", { id })}>
+              <IconTrash />
+            </TooltipTrigger>
+            <TooltipContent>
+              <span>Delete</span>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
   )
 }
