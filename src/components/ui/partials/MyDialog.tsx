@@ -1,9 +1,9 @@
-import React, { PropsWithChildren } from "react"
+import { PropsWithChildren } from "react"
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "../dialog"
@@ -11,15 +11,16 @@ import {
 type MyDialogProps = PropsWithChildren & {
   title: string
   subtitle?: string
-  trigger?: React.ReactNode
+  triggerChild?: React.ReactNode
 }
 
 export default function MyDialog(props: MyDialogProps) {
-  const { title, subtitle, children, trigger } = props
+  const { title, subtitle, children, triggerChild } = props
 
   return (
-    <Dialog>
-      <DialogTrigger>{trigger}</DialogTrigger>
+    <>
+      <DialogTrigger>{triggerChild}</DialogTrigger>
+      <DialogOverlay />
 
       <DialogContent className="!rounded-[16px]">
         <DialogHeader>
@@ -36,6 +37,6 @@ export default function MyDialog(props: MyDialogProps) {
 
         {children}
       </DialogContent>
-    </Dialog>
+    </>
   )
 }
