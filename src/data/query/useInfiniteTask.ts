@@ -27,7 +27,5 @@ export default function useInfiniteTask() {
     },
   })
 
-  console.log("QUERY DATA", query.data)
-
   return query
 }

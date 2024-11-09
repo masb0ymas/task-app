@@ -16,8 +16,6 @@ export async function GET(req: NextRequest) {
   const skip = pageSize * (page - 1)
   const take = pageSize
 
-  console.log(page, pageSize, skip, take)
-
   const result = await prisma.task.findMany({
     skip: skip,
     take: take,

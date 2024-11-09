@@ -32,8 +32,6 @@ export function List() {
     )
   }
 
-  console.log(data)
-
   return (
     <div className="flex flex-col gap-[24px] p-[16px]">
       <div className="w-full items-center">
