@@ -4,8 +4,10 @@ import { IconEdit } from "@tabler/icons-react"
 import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
 import _ from "lodash"
+import { useState } from "react"
 import IconTrash from "~/components/icon/trash"
 import { Checkbox } from "~/components/ui/checkbox"
+import { Dialog } from "~/components/ui/dialog"
 import MyDialog from "~/components/ui/partials/MyDialog"
 import MyTooltip from "~/components/ui/partials/MyTooltip"
 import TaskRepository from "~/data/repository/task"
@@ -21,6 +23,7 @@ type ListItemProps = {
 
 export default function ListItem(props: ListItemProps) {
   const { id, name, is_finished } = props
+  const [open, setOpen] = useState(false)
 
   const updateTask = useMutation({
     mutationFn: async (formData: any) => TaskRepository.update(id, formData),
@@ -83,27 +86,31 @@ export default function ListItem(props: ListItemProps) {
           onCheckedChange={(checked) => handleCheckbox(checked)}
         />
 
-        <MyDialog
-          title="Edit task"
-          trigger={
-            <label
-              className={clsx(
-                "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
-                is_finished && "line-through"
-              )}
-            >
-              {name}
-            </label>
-          }
-        >
-          <FormEdit id={id} />
-        </MyDialog>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <MyDialog
+            title="Edit task"
+            triggerChild={
+              <label
+                className={clsx(
+                  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
+                  is_finished && "line-through"
+                )}
+              >
+                {name}
+              </label>
+            }
+          >
+            <FormEdit id={id} closeDialog={() => setOpen(false)} />
+          </MyDialog>
+        </Dialog>
       </div>
 
       <div className="flex gap-[8px]">
-        <MyDialog title="Edit task" trigger={<IconEdit stroke={1.5} />}>
-          <FormEdit id={id} />
-        </MyDialog>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <MyDialog title="Edit task" triggerChild={<IconEdit stroke={1.5} />}>
+            <FormEdit id={id} closeDialog={() => setOpen(false)} />
+          </MyDialog>
+        </Dialog>
 
         <MyTooltip label="Delete task" onClick={() => handleDelete(id)}>
           <IconTrash />

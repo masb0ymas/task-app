@@ -114,14 +114,15 @@ export function FormAdd() {
   return <AbstractForm initialValues={{ name: "" }} mutation={postTask} />
 }
 
-export function FormEdit(props: { id: string }) {
-  const { id } = props
+export function FormEdit(props: { id: string; closeDialog: () => void }) {
+  const { id, closeDialog } = props
   const { data, isLoading, isFetching } = useTaskById(id)
 
   const updateTask = useMutation({
     mutationFn: async (formData: any) => TaskRepository.update(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task"] })
+      closeDialog()
     },
   })
 
