@@ -11,7 +11,7 @@ import { Dialog } from "~/components/ui/dialog"
 import MyDialog from "~/components/ui/partials/MyDialog"
 import MyTooltip from "~/components/ui/partials/MyTooltip"
 import TaskRepository from "~/data/repository/task"
-import { toast } from "~/hooks/use-toast"
+import { toast } from "~/lib/hooks/use-toast"
 import { queryClient } from "~/lib/WrapperReactQuery"
 import { FormEdit } from "./partials/Form"
 
