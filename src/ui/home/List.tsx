@@ -8,7 +8,7 @@ import ListItem from "./ListItem"
 
 export function List() {
   const { ref, inView } = useInView()
-  const { data, error, status, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteTask()
+  const { data, error, status, fetchNextPage, isFetchingNextPage } = useInfiniteTask()
 
   useEffect(() => {
     if (inView) {
@@ -46,19 +46,8 @@ export function List() {
         </div>
       </div>
 
-      <div className="flex justify-center items-center">
-        <button
-          ref={ref}
-          className="rounded-[120px] w-40 px-[32px] h-[52px] text-base font-semibold text-primary-foreground bg-[#601feb]"
-        >
-          {isFetchingNextPage ? (
-            <IconLoader />
-          ) : hasNextPage ? (
-            "Load Newer"
-          ) : (
-            "Nothing more to load"
-          )}
-        </button>
+      <div ref={ref} className="flex justify-center items-center">
+        {isFetchingNextPage && <IconLoader />}
       </div>
     </div>
   )

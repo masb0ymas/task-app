@@ -1,63 +1,40 @@
 "use client"
 
-import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
-import { useFormik } from "formik"
-import _ from "lodash"
+import { useFormState, useFormStatus } from "react-dom"
+import { createTask, updateTask } from "~/app/actions"
 import IconLoader from "~/components/icon/loader"
 import { TaskEntity } from "~/data/entity/task"
-import useTaskById from "~/data/query/useTaskById"
-import TaskRepository from "~/data/repository/task"
-import { taskSchema } from "~/data/schema/task"
-import { toast } from "~/lib/hooks/use-toast"
+import { FieldError } from "~/lib/form-field"
+import { useFormReset } from "~/lib/hooks/use-form-reset"
 import { queryClient } from "~/lib/WrapperReactQuery"
+import { EMPTY_FORM_STATE, FormState } from "~/lib/zod"
 
 type AbstractFormProps = {
   initialValues: Partial<TaskEntity>
-  mutation: ReturnType<typeof useMutation<any, any, any, any>>
+  formState: FormState
+  action: (payload: FormData) => void
   isEdit?: boolean
+  closeDialog?: () => void
 }
 
 function AbstractForm(props: AbstractFormProps) {
-  const { initialValues, mutation, isEdit } = props
+  const { initialValues, isEdit, formState, action, closeDialog } = props
 
-  const formik = useFormik({
-    initialValues,
-    enableReinitialize: true,
-    validate: (values) => {
-      try {
-        taskSchema.parse(values)
-      } catch (error: any) {
-        console.log(error)
-        return error.formErrors.fieldErrors
-      }
-    },
-    onSubmit: async (values) => {
-      console.log(values)
+  const { pending } = useFormStatus()
+  const formRef = useFormReset(formState)
 
-      try {
-        await mutation.mutateAsync(values)
-      } catch (error: any) {
-        const title = "Catch Error, Please Try Again!"
-        let message = "Something went wrong!"
+  function onSubmit(formData: FormData) {
+    action(formData)
+    queryClient.invalidateQueries({ queryKey: ["task"] })
 
-        if (error.response.status === 404) {
-          message = _.get(error, "response.data.message", "Task not found")
-        }
-
-        toast({
-          title,
-          description: message,
-        })
-      }
-
-      formik.setSubmitting(false)
-      formik.resetForm()
-    },
-  })
+    if (isEdit) {
+      closeDialog?.()
+    }
+  }
 
   function childBtn() {
-    if (formik.isSubmitting) {
+    if (pending) {
       return (
         <div className="flex justify-center items-center">
           <IconLoader />
@@ -71,7 +48,7 @@ function AbstractForm(props: AbstractFormProps) {
   }
 
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <form action={onSubmit} ref={formRef}>
       <div
         className={clsx(
           "flex",
@@ -79,26 +56,25 @@ function AbstractForm(props: AbstractFormProps) {
           !isEdit && "px-[12px] py-[16px]"
         )}
       >
+        {isEdit && <input type="hidden" name="id" value={initialValues.id} />}
+
         <div className="w-full">
           <input
             type="text"
             name="name"
-            placeholder="Search..."
+            placeholder="Input task..."
             className="w-full rounded-[7.5rem] border-[1px] border-input bg-background px-[24px] py-[15px] outline-none text-sm placeholder:text-muted-foreground focus:border-[#601feb] focus:ring-[#601feb]"
-            onChange={formik.handleChange}
-            value={formik.values.name}
+            defaultValue={initialValues.name}
           />
-          {formik.errors.name && (
-            <p className="text-red-500 pl-[24px] pt-[5px]">{formik.errors.name}</p>
-          )}
+          <FieldError formState={formState} name="name" />
         </div>
 
         <button
           type="submit"
-          disabled={formik.isSubmitting}
+          disabled={pending}
           className={clsx(
             "rounded-[120px] px-[32px] h-[52px] text-base font-semibold text-primary-foreground",
-            formik.isSubmitting ? "bg-transparent" : "bg-[#601feb]"
+            pending ? "bg-transparent" : "bg-[#601feb]"
           )}
         >
           {childBtn()}
@@ -109,26 +85,22 @@ function AbstractForm(props: AbstractFormProps) {
 }
 
 export function FormAdd() {
-  const postTask = useMutation({
-    mutationFn: async (formData: any) => TaskRepository.create(formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] })
-    },
-  })
+  const [formState, action] = useFormState(createTask, EMPTY_FORM_STATE)
 
-  return <AbstractForm initialValues={{ name: "" }} mutation={postTask} />
+  return <AbstractForm initialValues={{ name: "" }} formState={formState} action={action} />
 }
 
 export function FormEdit(props: { data: TaskEntity; closeDialog: () => void }) {
   const { data, closeDialog } = props
+  const [formState, action] = useFormState(updateTask, EMPTY_FORM_STATE)
 
-  const updateTask = useMutation({
-    mutationFn: async (formData: any) => TaskRepository.update(data.id, formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] })
-      closeDialog()
-    },
-  })
-
-  return <AbstractForm initialValues={{ name: data?.name }} mutation={updateTask} isEdit />
+  return (
+    <AbstractForm
+      initialValues={{ ...data }}
+      isEdit
+      formState={formState}
+      action={action}
+      closeDialog={closeDialog}
+    />
+  )
 }

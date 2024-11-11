@@ -88,17 +88,15 @@ export default function ListItem(props: ListItemProps) {
 
   return (
     <div className="flex flex-row justify-between bg-white rounded-[120px] py-[12px] px-[24px]">
-      <div className="flex gap-[12px] items-center">
-        <form>
-          <Checkbox
-            id={`is_finished-${id}`}
-            name="is_finished"
-            checked={formik.values.is_finished}
-            className="data-[state=checked]:bg-[#601feb]"
-            defaultChecked={is_finished}
-            onCheckedChange={(checked) => handleCheckbox(checked)}
-          />
-        </form>
+      <form className="flex gap-[12px] items-center">
+        <Checkbox
+          id={`is_finished-${id}`}
+          name="is_finished"
+          checked={formik.values.is_finished}
+          className="data-[state=checked]:bg-[#601feb]"
+          defaultChecked={is_finished}
+          onCheckedChange={(checked) => handleCheckbox(checked)}
+        />
 
         <Dialog open={open} onOpenChange={setOpen}>
           <MyDialog
@@ -107,7 +105,7 @@ export default function ListItem(props: ListItemProps) {
               <label
                 className={clsx(
                   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 hover:cursor-pointer",
-                  is_finished && "line-through"
+                  formik.values.is_finished && "line-through"
                 )}
               >
                 {name}
@@ -117,7 +115,7 @@ export default function ListItem(props: ListItemProps) {
             <FormEdit data={{ ...props }} closeDialog={() => setOpen(false)} />
           </MyDialog>
         </Dialog>
-      </div>
+      </form>
 
       <div className="flex gap-[8px]">
         <Dialog open={open} onOpenChange={setOpen}>
