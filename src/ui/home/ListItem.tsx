@@ -3,6 +3,7 @@
 import { IconEdit } from "@tabler/icons-react"
 import { useMutation } from "@tanstack/react-query"
 import clsx from "clsx"
+import { useFormik } from "formik"
 import _ from "lodash"
 import { useState } from "react"
 import IconTrash from "~/components/icon/trash"
@@ -10,20 +11,28 @@ import { Checkbox } from "~/components/ui/checkbox"
 import { Dialog } from "~/components/ui/dialog"
 import MyDialog from "~/components/ui/partials/MyDialog"
 import MyTooltip from "~/components/ui/partials/MyTooltip"
+import { TaskEntity } from "~/data/entity/task"
 import TaskRepository from "~/data/repository/task"
 import { toast } from "~/lib/hooks/use-toast"
 import { queryClient } from "~/lib/WrapperReactQuery"
 import { FormEdit } from "./partials/Form"
 
-type ListItemProps = {
-  id: string
-  name: string
-  is_finished: boolean
-}
+type ListItemProps = TaskEntity
 
 export default function ListItem(props: ListItemProps) {
   const { id, name, is_finished } = props
   const [open, setOpen] = useState(false)
+
+  const formik = useFormik({
+    initialValues: {
+      ...props,
+      is_finished: is_finished,
+    },
+    enableReinitialize: true,
+    onSubmit: (values) => {
+      TaskRepository.update(id, values)
+    },
+  })
 
   const updateTask = useMutation({
     mutationFn: async (formData: any) => TaskRepository.update(id, formData),
@@ -58,6 +67,8 @@ export default function ListItem(props: ListItemProps) {
   }
 
   async function handleCheckbox(checked: string | boolean) {
+    formik.setFieldValue("is_finished", checked)
+
     try {
       await updateTask.mutateAsync({ name, is_finished: checked })
     } catch (error: any) {
@@ -78,13 +89,16 @@ export default function ListItem(props: ListItemProps) {
   return (
     <div className="flex flex-row justify-between bg-white rounded-[120px] py-[12px] px-[24px]">
       <div className="flex gap-[12px] items-center">
-        <Checkbox
-          id={`is_finished-${id}`}
-          name="is_finished"
-          className="data-[state=checked]:bg-[#601feb]"
-          defaultChecked={is_finished}
-          onCheckedChange={(checked) => handleCheckbox(checked)}
-        />
+        <form>
+          <Checkbox
+            id={`is_finished-${id}`}
+            name="is_finished"
+            checked={formik.values.is_finished}
+            className="data-[state=checked]:bg-[#601feb]"
+            defaultChecked={is_finished}
+            onCheckedChange={(checked) => handleCheckbox(checked)}
+          />
+        </form>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <MyDialog
@@ -100,7 +114,7 @@ export default function ListItem(props: ListItemProps) {
               </label>
             }
           >
-            <FormEdit id={id} closeDialog={() => setOpen(false)} />
+            <FormEdit data={{ ...props }} closeDialog={() => setOpen(false)} />
           </MyDialog>
         </Dialog>
       </div>
@@ -108,7 +122,7 @@ export default function ListItem(props: ListItemProps) {
       <div className="flex gap-[8px]">
         <Dialog open={open} onOpenChange={setOpen}>
           <MyDialog title="Edit task" triggerChild={<IconEdit stroke={1.5} />}>
-            <FormEdit id={id} closeDialog={() => setOpen(false)} />
+            <FormEdit data={{ ...props }} closeDialog={() => setOpen(false)} />
           </MyDialog>
         </Dialog>
 

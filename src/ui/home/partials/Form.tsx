@@ -23,6 +23,7 @@ function AbstractForm(props: AbstractFormProps) {
 
   const formik = useFormik({
     initialValues,
+    enableReinitialize: true,
     validate: (values) => {
       try {
         taskSchema.parse(values)
@@ -57,7 +58,11 @@ function AbstractForm(props: AbstractFormProps) {
 
   function childBtn() {
     if (formik.isSubmitting) {
-      return <IconLoader />
+      return (
+        <div className="flex justify-center items-center">
+          <IconLoader />
+        </div>
+      )
     } else if (isEdit) {
       return "Update"
     } else {
@@ -114,26 +119,16 @@ export function FormAdd() {
   return <AbstractForm initialValues={{ name: "" }} mutation={postTask} />
 }
 
-export function FormEdit(props: { id: string; closeDialog: () => void }) {
-  const { id, closeDialog } = props
-  const { data, isLoading, isFetching } = useTaskById(id)
+export function FormEdit(props: { data: TaskEntity; closeDialog: () => void }) {
+  const { data, closeDialog } = props
 
   const updateTask = useMutation({
-    mutationFn: async (formData: any) => TaskRepository.update(id, formData),
+    mutationFn: async (formData: any) => TaskRepository.update(data.id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task"] })
       closeDialog()
     },
   })
-
-  if (isLoading || isFetching) {
-    return (
-      <div className="flex flex-col justify-center items-center mt-4">
-        <IconLoader />
-        <span>Loading...</span>
-      </div>
-    )
-  }
 
   return <AbstractForm initialValues={{ name: data?.name }} mutation={updateTask} isEdit />
 }
